@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Pistache
+external/pistache
+external/build-pistache
+
+# CMake
+CMakeLists.txt.user
