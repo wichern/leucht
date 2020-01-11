@@ -22,40 +22,27 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#ifndef __LEUCHT_ANIMATION_ANIMATIONBASE_H__
+#define __LEUCHT_ANIMATION_ANIMATIONBASE_H__
 
-#include <cstdlib>
-#include <ctime>
+#include <cstdint>
 
-int main(int argc, char* argv[])
+class Screen;
+
+namespace animation {
+
+class AnimationBase
 {
-    ::srand(::time(NULL));
+public:
+    AnimationBase(Screen& screen);
+    virtual ~AnimationBase() = default;
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
+    virtual void draw(uint32_t layer) = 0;
 
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
+protected:
+    Screen& screen_;
+};
 
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
+}  // namespace animation
 
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
-
-    game.run();
-
-    return EXIT_SUCCESS;
-}
+#endif  // __LEUCHT_ANIMATION_ANIMATIONBASE_H__

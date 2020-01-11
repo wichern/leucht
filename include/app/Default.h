@@ -22,40 +22,26 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#ifndef __LEUCHT_APP_DEFAULT_H__
+#define __LEUCHT_APP_DEFAULT_H__
 
-#include <cstdlib>
-#include <ctime>
+#include "app/IApp.h"
 
-int main(int argc, char* argv[])
+namespace app {
+
+class Default : public IApp
 {
-    ::srand(::time(NULL));
+public:
+    ~Default() {}
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
+    const char* name() override { return "Default"; }
 
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
+    void init(Screen& screen) override;
+    void update(Screen& screen) override;
+    void close() override;
+    void keyPressed(Key key) override;
+};
 
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
+}  // namespace app
 
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
-
-    game.run();
-
-    return EXIT_SUCCESS;
-}
+#endif  // __LEUCHT_APP_DEFAULT_H__

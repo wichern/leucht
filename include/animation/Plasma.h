@@ -22,40 +22,41 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#ifndef __LEUCHT_ANIMATION_PLASMA_H__
+#define __LEUCHT_ANIMATION_PLASMA_H__
 
-#include <cstdlib>
-#include <ctime>
+#include "animation/AnimationBase.h"
 
-int main(int argc, char* argv[])
+#include "types.h"
+
+namespace animation {
+
+class Plasma : public AnimationBase
 {
-    ::srand(::time(NULL));
+public:
+    Plasma(Screen& screen);
+    ~Plasma() = default;
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
+    void init(colour_alpha_t start, colour_alpha_t end);
+    void update();
+    void draw(uint32_t layer) override;
 
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
+private:
+    static const int ColourCount = 512;
 
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
+    // Generate colour table.
+    void generate(colour_alpha_t start, colour_alpha_t end);
 
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
+    // Colour table
+    colour_alpha_t colourtable_[ColourCount];
 
-    game.run();
+    uint32_t cos_counter_ = 0;
+    uint32_t sin_counter_ = 0;
 
-    return EXIT_SUCCESS;
-}
+    float ca1_ = 0.0f;
+    float ca2_ = 0.0f;
+};
+
+}  // namespace animation
+
+#endif  // __LEUCHT_ANIMATION_PLASMA_H__

@@ -22,40 +22,43 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#ifndef __LEUCHT_ENGINE_GAME_H__
+#define __LEUCHT_ENGINE_GAME_H__
 
-#include <cstdlib>
-#include <ctime>
+#include "engine/Renderer.h"
+#include "app/IApp.h"
+#include "Screen.h"
+#include "LeuchtAPI.h"
 
-int main(int argc, char* argv[])
+#include <atomic>
+#include <vector>
+
+#include <cstdint>
+
+namespace engine {
+
+class Game
 {
-    ::srand(::time(NULL));
+public:
+    Game(uint32_t w, uint32_t h);
+    ~Game();
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
+    bool init(int port, bool bcm2835, bool sdl);
 
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
+    void run();
 
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
+private:
+    Renderer* renderer_ = nullptr;
+    Screen screen_;
 
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
+    LeuchtAPI* webApi_ = nullptr;
+    std::atomic<int> appSwitchSignal_;
+    std::atomic<int> keyPressedEvent_;
 
-    game.run();
+    std::vector<app::IApp*> apps_;
+    size_t activeApp_ = 0;
+};
 
-    return EXIT_SUCCESS;
-}
+}  // namespace engine
+
+#endif  // __LEUCHT_ENGINE_GAME_H__

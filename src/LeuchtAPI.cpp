@@ -1,78 +1,100 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019 Paul Wichern
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "LeuchtAPI.h"
+
+#include "resources/IndexHtml.h"
+#include "resources/LeuchtScript.h"
 
 #include <pistache/http_header.h>
 #include <pistache/mime.h>
 
-#include <iostream>
+using namespace Pistache;
 
-LeuchtAPI::LeuchtAPI(Address addr, const char* html, const std::vector<std::string>& features)
-    : httpEndpoint_(std::make_shared<Http::Endpoint>(addr)),
-      html_(html),
-      features_(features)
+LeuchtAPI::LeuchtAPI(
+        int port,
+        const std::vector<app::IApp*>& apps,
+        std::atomic<int>& appSwitcher,
+        std::atomic<int>& keyPressed)
+    : httpEndpoint_(std::make_shared<Http::Endpoint>(Address{Ipv4::any(), Port(port)})),
+      apps_(apps),
+      appSwitcher_(appSwitcher),
+      keyPressed_(keyPressed)
 {
 
 }
 
-void LeuchtAPI::init(const std::string& active, size_t threads)
+void LeuchtAPI::init(size_t activeApp)
 {
-    if (std::find(features_.begin(), features_.end(), active) == features_.end()) {
-        std::cerr << "Tried to activate unknown feature " << active << std::endl;
-    } else {
-        active_ = active;
-    }
+    assert(activeApp >= 0 && activeApp < apps_.size());
+
+    activeApp_ = activeApp;
 
     auto opts = Http::Endpoint::options()
-            .threads(threads)
             .flags(Tcp::Options::ReuseAddr);
     httpEndpoint_->init(opts);
-    setupRoutes();
-}
 
-void LeuchtAPI::start()
-{
-    httpEndpoint_->setHandler(router_.handler());
-    httpEndpoint_->serve();
-}
-
-void LeuchtAPI::setupRoutes()
-{
     using namespace Rest;
+    Routes::Post(router_, "/api/app/activate/:app?", Routes::bind(&LeuchtAPI::doSetActiveApp, this));
+    Routes::Get(router_, "/api/app/list", Routes::bind(&LeuchtAPI::doGetApps, this));
+    Routes::Get(router_, "/api/app/active", Routes::bind(&LeuchtAPI::doGetActiveApp, this));
+    Routes::Post(router_, "/api/app/key/:key?", Routes::bind(&LeuchtAPI::doKeyPressed, this));
+    Routes::Get(router_, "/", Routes::bind(&LeuchtAPI::doGetIndexHTML, this));
+    Routes::Get(router_, "/leucht.js", Routes::bind(&LeuchtAPI::doGetScript, this));
 
-    Routes::Post(router_, "/api/active/:feature?", Routes::bind(&LeuchtAPI::doSetActiveFeature, this));
-    Routes::Get(router_, "/api/features", Routes::bind(&LeuchtAPI::doGetFeatures, this));
-    Routes::Get(router_, "/api/active", Routes::bind(&LeuchtAPI::doGetActiveFeature, this));
-    Routes::Get(router_, "/", Routes::bind(&LeuchtAPI::doGetIndex, this));
+    httpEndpoint_->setHandler(router_.handler());
+    httpEndpoint_->serveThreaded();
 }
 
-void LeuchtAPI::doSetActiveFeature(const Rest::Request& request, Http::ResponseWriter response)
+void LeuchtAPI::doSetActiveApp(const Rest::Request& request, Http::ResponseWriter response)
 {
-    std::string feature = request.param(":feature").as<std::string>();
+    int active = request.param(":app").as<int>();
 
-    if (std::find(features_.begin(), features_.end(), feature) == features_.end()) {
-        response.send(Http::Code::Not_Found, "Feature \"" + feature + "\" does not exist");
+    if (active < 0 || active >= apps_.size()) {
+        response.send(Http::Code::Not_Found, "App \"" + std::to_string(active) + "\" does not exist");
     } else {
-        active_ = feature;
-        std::cout << "Switched to " << active_ << std::endl;
+        activeApp_ = active;
+        appSwitcher_ = activeApp_;
         response.headers().add<Http::Header::ContentType>(MIME(Text, Plain));
-        response.send(Http::Code::Ok, active_);
+        response.send(Http::Code::Ok, std::to_string(activeApp_).c_str());
     }
 }
 
-void LeuchtAPI::doGetActiveFeature(const Rest::Request& request, Http::ResponseWriter response)
+void LeuchtAPI::doGetActiveApp(const Rest::Request&, Http::ResponseWriter response)
 {
-    (void)request;
     response.headers().add<Http::Header::ContentType>(MIME(Text, Plain));
-    response.send(Http::Code::Ok, active_);
+    response.send(Http::Code::Ok, std::to_string(activeApp_).c_str());
 }
 
-void LeuchtAPI::doGetFeatures(const Rest::Request& request, Http::ResponseWriter response)
+void LeuchtAPI::doGetApps(const Rest::Request&, Http::ResponseWriter response)
 {
-    (void)request;
-
     std::string ret("[");
-    for (size_t i = 0; i < features_.size(); ++i) {
-        ret += '"' + features_[i] + '"';
-        if (i + 1 < features_.size())
+    for (size_t i = 0; i < apps_.size(); ++i) {
+        ret += '"';
+        ret += apps_[i]->name();
+        ret += '"';
+        if (i + 1 < apps_.size())
             ret += ',';
     }
     ret += ']';
@@ -81,8 +103,18 @@ void LeuchtAPI::doGetFeatures(const Rest::Request& request, Http::ResponseWriter
     response.send(Http::Code::Ok, ret);
 }
 
-void LeuchtAPI::doGetIndex(const Rest::Request& request, Http::ResponseWriter response)
+void LeuchtAPI::doKeyPressed(const Rest::Request& request, Http::ResponseWriter response)
 {
-    (void)request;
-    response.send(Http::Code::Ok, html_);
+    keyPressed_ = request.param(":key").as<int>();
+    response.send(Http::Code::Ok);
+}
+
+void LeuchtAPI::doGetIndexHTML(const Rest::Request&, Http::ResponseWriter response)
+{
+    response.send(Http::Code::Ok, resource::IndexHTML, MIME(Text, Html));
+}
+
+void LeuchtAPI::doGetScript(const Rest::Request&, Http::ResponseWriter response)
+{
+    response.send(Http::Code::Ok, resource::LeuchtScript, MIME(Text, Javascript));
 }

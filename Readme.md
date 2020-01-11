@@ -3,24 +3,23 @@
 ## Compile
 
 ```bash
+# For pistache
 sudo apt install libssl-dev
-```
 
-```bash
-mkdir -p external/pistache
-cd external
-git clone https://github.com/oktal/pistache.git build-pistache
-cd build-pistache
-git submodule update --init
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DPISTACHE_USE_SSL=true -DCMAKE_INSTALL_PREFIX=../pistache
-make -j
-make install
-cd ../..
-```
+# For simulation with SDL
+sudo apt install libsdl1.2-dev
 
-```bash
+# For playing radio streams
+sudo apt install vlc
+
+./get_externals.sh
 mkdir build
 cd build
 cmake ..
 make -j
 ```
+
+## Hardware Setup
+
+The wall is made up of 252 [WS2801](https://www.adafruit.com/product/738) pixels.
+See https://learn.adafruit.com/12mm-led-pixels/wiring on how to set them up.

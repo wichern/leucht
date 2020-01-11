@@ -22,40 +22,14 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#include "animation/AnimationBase.h"
 
-#include <cstdlib>
-#include <ctime>
+namespace animation {
 
-int main(int argc, char* argv[])
+AnimationBase::AnimationBase(Screen& screen)
+    : screen_(screen)
 {
-    ::srand(::time(NULL));
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
-
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
-
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
-
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
-
-    game.run();
-
-    return EXIT_SUCCESS;
 }
+
+}  // namespace animation

@@ -22,40 +22,34 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#ifndef __LEUCHT_ENGINE_RENDERER_H__
+#define __LEUCHT_ENGINE_RENDERER_H__
 
-#include <cstdlib>
-#include <ctime>
+#include "Screen.h"
 
-int main(int argc, char* argv[])
+#include <SDL/SDL.h>
+
+#include <cstdint>
+
+namespace engine {
+
+class Renderer
 {
-    ::srand(::time(NULL));
+public:
+    Renderer() = default;
+    ~Renderer();
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
+    bool init(uint32_t w, uint32_t h, bool bcm2835, bool sdl, int pixelSize = 20);
 
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
+    void render(const Screen& screen);
 
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
+private:
+    bool bcm2835_ = false;
+    SDL_Surface* screen_ = nullptr;
+    SDL_Surface* image_ = nullptr;
+    int pixelSize_ = 1;
+};
 
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
+}  // namespace engine
 
-    game.run();
-
-    return EXIT_SUCCESS;
-}
+#endif  // __LEUCHT_ENGINE_RENDERER_H__

@@ -22,40 +22,54 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#include "app/Colour.h"
+#include "Screen.h"
 
-#include <cstdlib>
-#include <ctime>
+namespace app {
 
-int main(int argc, char* argv[])
+static colour_alpha_t S_colours[] {
+    colour_alpha_t(255, 0, 0),
+    colour_alpha_t(0, 255, 0),
+    colour_alpha_t(0, 0, 255)
+};
+
+static int S_colourCount = sizeof(S_colours) / sizeof(S_colours[0]);
+
+void Colour::init(Screen& screen)
 {
-    ::srand(::time(NULL));
+    screen.clear();
+}
 
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
+void Colour::update(Screen& screen)
+{
+    screen.fill(S_colours[current_], 0);
+}
 
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
+void Colour::close()
+{
+
+}
+
+void Colour::keyPressed(Key key)
+{
+    switch (key) {
+    case Key_Up:
+    case Key_Right:
+    {
+        current_--;
+    } break;
+    case Key_Down:
+    case Key_Left:
+    {
+        current_++;
+    } break;
     }
 
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
-
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
-
-    game.run();
-
-    return EXIT_SUCCESS;
+    if (current_ < 0) {
+        current_ = S_colourCount - 1;
+    } else if (current_ >= S_colourCount) {
+        current_ = 0;
+    }
 }
+
+}  // namespace app

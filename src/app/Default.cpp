@@ -22,40 +22,37 @@
  * SOFTWARE.
  */
 
-#include "engine/Game.h"
+#include "app/Default.h"
+#include "Screen.h"
 
-#include <cstdlib>
-#include <ctime>
+#include <iostream>
 
-int main(int argc, char* argv[])
+namespace app {
+
+void Default::init(Screen& screen)
 {
-    ::srand(::time(NULL));
-
-    int port = 8080;
-    if (argc >= 2)
-        port = std::stol(argv[1]);
-
-    // Check where we want to output
-    bool bcm2835 = false;
-    bool sdl = false;
-    if (argc >= 3) {
-        bcm2835 = 0 == strcmp(argv[2], "bcm2835");
-        sdl = 0 == strcmp(argv[2], "sdl");
-        if (argc >= 4) {
-            bcm2835 &= 0 == strcmp(argv[3], "bcm2835");
-            sdl &= 0 == strcmp(argv[3], "sdl");
-        }
-    }
-
-    // default to SDL
-    if (!bcm2835)
-        sdl = true;
-
-    engine::Game game(21, 12);
-    if (!game.init(port, bcm2835, sdl))
-        return EXIT_FAILURE;
-
-    game.run();
-
-    return EXIT_SUCCESS;
+    screen.clear();
+    screen.write(1 + 0, 3, 0, colour_alpha_t(255, 0, 0), "L");
+    screen.write(1 + 3, 3, 0, colour_alpha_t(0, 255, 0), "E");
+    screen.write(1 + 6, 3, 0, colour_alpha_t(0, 0, 255), "U");
+    screen.write(1 + 9, 3, 0, colour_alpha_t(255, 0, 255), "C");
+    screen.write(1 + 12, 3, 0, colour_alpha_t(255, 255, 0), "H");
+    screen.write(1 + 15, 3, 0, colour_alpha_t(0, 255, 255), "T");
 }
+
+void Default::update(Screen& screen)
+{
+    (void)screen;
+}
+
+void Default::close()
+{
+
+}
+
+void Default::keyPressed(Key key)
+{
+    std::cout << "Key: " << key << std::endl;
+}
+
+}  // namespace app
