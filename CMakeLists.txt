@@ -31,7 +31,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/pistache/include)
 
 if(CMAKE_CROSSCOMPILING)
-    target_link_libraries(${PROJECT_NAME} pistache pthread)
+    target_link_libraries(${PROJECT_NAME} pistache.a pthread)
 else()
     add_definitions(-DSDL_RENDERING)
     target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/external/pistache/lib/libpistache.a ssl crypto pthread SDL)

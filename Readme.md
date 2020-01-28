@@ -24,17 +24,6 @@ cmake ..
 make -j
 ```
 
-### RaspberryPi
-
-```bash
-mkdir build
-cd build
-export CROSS_COMPILE=$HOME/x-tools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
-export STAGING=$HOME/repo/raspberry/rootfs
-cmake .. -DCMAKE_SYSROOT=${STAGING} -DCMAKE_CROSSCOMPILING=1 -DCMAKE_C_COMPILER=${CROSS_COMPILE}gcc -DCMAKE_CXX_COMPILER=${CROSS_COMPILE}g++ -DCMAKE_LIBRARY_PATH=${STAGING}/usr/lib -DCMAKE_SHARED_LINKER_FLAGS=--sysroot=${STAGING}
-make -j
-```
-
 ## Cross-Compile for Raspberry Pi Zero
 
 The raspberry pi zero needs an arm6 compiler (see [here](https://raspberrypi.stackexchange.com/a/103756/113940).

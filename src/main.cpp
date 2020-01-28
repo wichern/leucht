@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
     if (argc >= 2)
         port = std::stol(argv[1]);
 
+#ifdef SDL_RENDERING
     // Check where we want to output
     bool bcm2835 = false;
     bool sdl = false;
@@ -50,6 +51,10 @@ int main(int argc, char* argv[])
     // default to SDL
     if (!bcm2835)
         sdl = true;
+#else
+    bool bcm2835 = true;
+    bool sdl = false;
+#endif
 
     engine::Game game(21, 12);
     if (!game.init(port, bcm2835, sdl))

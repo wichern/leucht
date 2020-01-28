@@ -62,8 +62,11 @@ Renderer::~Renderer()
 bool Renderer::init(uint32_t w, uint32_t h, bool bcm2835, bool sdl, int pixelSize)
 {
     if (bcm2835) {
+        if (1 != bcm2835_init()) {
+            return false;
+        }
         if (1 != bcm2835_spi_begin()) {
-            std::cerr << "SPI init failed: bcm2835_init() failed, or not root" << std::endl;
+            std::cerr << "BCM2835 does not support running in group 'gpio'. Please start as root." << std::endl;
             return false;
         }
 
@@ -111,6 +114,9 @@ bool Renderer::init(uint32_t w, uint32_t h, bool bcm2835, bool sdl, int pixelSiz
             return false;
         }
 #else
+        (void)w;
+        (void)h;
+        (void)pixelSize;
         std::cerr << "SDL not supported!" << std::endl;
 #endif
     }
