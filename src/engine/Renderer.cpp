@@ -24,6 +24,10 @@
 
 #include "engine/Renderer.h"
 
+#ifdef SDL_RENDERING
+#include <SDL/SDL.h>
+#endif
+
 #include "bcm2835.h"
 
 #include <iostream>
@@ -32,6 +36,7 @@ namespace engine {
 
 Renderer::~Renderer()
 {
+#ifdef SDL_RENDERING
     if (bcm2835_) {
         bcm2835_spi_end();
     }
@@ -51,6 +56,7 @@ Renderer::~Renderer()
 //    if (window_) {
 //        SDL_DestroyWindow(window_);
 //    }
+#endif
 }
 
 bool Renderer::init(uint32_t w, uint32_t h, bool bcm2835, bool sdl, int pixelSize)
@@ -79,6 +85,7 @@ bool Renderer::init(uint32_t w, uint32_t h, bool bcm2835, bool sdl, int pixelSiz
     }
 
     if (sdl) {
+#ifdef SDL_RENDERING
         pixelSize_ = pixelSize;
 
         screen_ = SDL_SetVideoMode(w * pixelSize, h * pixelSize, 16, SDL_HWSURFACE|SDL_DOUBLEBUF);
@@ -103,6 +110,9 @@ bool Renderer::init(uint32_t w, uint32_t h, bool bcm2835, bool sdl, int pixelSiz
             screen_ = nullptr;
             return false;
         }
+#else
+        std::cerr << "SDL not supported!" << std::endl;
+#endif
     }
 
     return true;
@@ -121,6 +131,7 @@ void Renderer::render(const Screen& screen)
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+#ifdef SDL_RENDERING
     if (screen_) {
         Uint32* pixels = (Uint32 *)image_->pixels;
 
@@ -147,6 +158,7 @@ void Renderer::render(const Screen& screen)
 //            }
         }
     }
+#endif
 }
 
 }  // namespace engine

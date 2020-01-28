@@ -64,7 +64,17 @@ public:
      */
     void set(uint32_t x, uint32_t y, uint32_t layer, colour_alpha_t colour);
 
-    void write(uint32_t x, uint32_t y, uint32_t layer, colour_alpha_t colour, const std::string& msg);
+    /**
+     * @brief Write text to screen.
+     *
+     * @param x             x-position
+     * @param y             y-position
+     * @param layer         layer to paint to (0 is background, n is foreground)
+     * @param colour        colour
+     * @param msg           string to write
+     * @param offset        offset (use for moving text)
+     */
+    void write(uint32_t x, uint32_t y, uint32_t layer, colour_alpha_t colour, const std::string& msg, int32_t offset = 0);
 
     uint32_t width() const { return w_; }
     uint32_t height() const { return h_; }

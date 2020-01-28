@@ -27,9 +27,11 @@
 
 #include "Screen.h"
 
-#include <SDL/SDL.h>
-
 #include <cstdint>
+
+#ifdef SDL_RENDERING
+class SDL_Surface;
+#endif
 
 namespace engine {
 
@@ -45,8 +47,10 @@ public:
 
 private:
     bool bcm2835_ = false;
+#ifdef SDL_RENDERING
     SDL_Surface* screen_ = nullptr;
     SDL_Surface* image_ = nullptr;
+#endif
     int pixelSize_ = 1;
 };
 

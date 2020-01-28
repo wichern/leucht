@@ -24,11 +24,15 @@
 
 #include "engine/Game.h"
 
-#include "app/Default.h"
+#include "app/Welcome.h"
 #include "app/Colour.h"
 #include "app/Clock.h"
 #include "app/Radio.h"
 #include "app/Snake.h"
+
+#ifdef SDL_RENDERING
+#include <SDL/SDL.h>
+#endif
 
 namespace engine {
 
@@ -50,14 +54,16 @@ Game::~Game()
 
     delete renderer_;
 
+#ifdef SDL_RENDERING
     SDL_Quit();
+#endif
 }
 
 bool Game::init(int port, bool bcm2835, bool sdl)
 {
     assert(apps_.empty());
 
-    apps_.push_back(new app::Default);
+    apps_.push_back(new app::Welcome);
     apps_.push_back(new app::Colour);
     apps_.push_back(new app::Clock);
     apps_.push_back(new app::Radio);
@@ -68,10 +74,12 @@ bool Game::init(int port, bool bcm2835, bool sdl)
     webApi_ = new LeuchtAPI(port, apps_, appSwitchSignal_, keyPressedEvent_);
     webApi_->init(activeApp_);
 
+#ifdef SDL_RENDERING
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL_Init: " << SDL_GetError() << std::endl;
         return false;
     }
+#endif
 
     renderer_ = new Renderer();
     return renderer_->init(screen_.width(), screen_.height(), bcm2835, sdl);
@@ -88,6 +96,7 @@ void Game::run()
     auto nextRender = currentTime;
 
     while (running) {
+#ifdef SDL_RENDERING
         SDL_Event event;
         SDL_PollEvent(&event);
 
@@ -97,6 +106,7 @@ void Game::run()
             running = false;
             break;
         }
+#endif
 
         int switchApp = appSwitchSignal_;
         if (switchApp != -1) {

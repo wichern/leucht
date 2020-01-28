@@ -25,8 +25,6 @@
 #include "Screen.h"
 #include "font.h"
 
-#include <SDL/SDL.h>
-
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -79,8 +77,11 @@ void Screen::write(
         uint32_t y,
         uint32_t layer,
         colour_alpha_t colour,
-        const std::string& msg)
+        const std::string& msg,
+        int32_t offset)
 {
+    (void)offset;
+
     for (char c : msg) {
         // make short space character
         if (c == 0x20) {

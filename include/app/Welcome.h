@@ -22,37 +22,26 @@
  * SOFTWARE.
  */
 
-#include "app/Default.h"
-#include "Screen.h"
+#ifndef __LEUCHT_APP_WELCOME_H__
+#define __LEUCHT_APP_WELCOME_H__
 
-#include <iostream>
+#include "app/IApp.h"
 
 namespace app {
 
-void Default::init(Screen& screen)
+class Welcome : public IApp
 {
-    screen.clear();
-    screen.write(1 + 0, 3, 0, colour_alpha_t(255, 0, 0), "L");
-    screen.write(1 + 3, 3, 0, colour_alpha_t(0, 255, 0), "E");
-    screen.write(1 + 6, 3, 0, colour_alpha_t(0, 0, 255), "U");
-    screen.write(1 + 9, 3, 0, colour_alpha_t(255, 0, 255), "C");
-    screen.write(1 + 12, 3, 0, colour_alpha_t(255, 255, 0), "H");
-    screen.write(1 + 15, 3, 0, colour_alpha_t(0, 255, 255), "T");
-}
+public:
+    ~Welcome() {}
 
-void Default::update(Screen& screen)
-{
-    (void)screen;
-}
+    const char* name() override { return "Welcome"; }
 
-void Default::close()
-{
-
-}
-
-void Default::keyPressed(Key key)
-{
-    std::cout << "Key: " << key << std::endl;
-}
+    void init(Screen& screen) override;
+    void update(Screen& screen) override;
+    void close() override;
+    void keyPressed(Key key) override;
+};
 
 }  // namespace app
+
+#endif  // __LEUCHT_APP_WELCOME_H__
