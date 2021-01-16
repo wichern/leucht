@@ -27,19 +27,33 @@
 
 #include "types.h"
 
+#include <atomic>
 #include <vector>
 #include <thread>
-#include <atomic>
+#include <string>
 
 #include <cstdint>
 
 class Screen
 {
 public:
+    /**
+     * Constructor
+     * 
+     * @param w         Screen width
+     * @param h         Screen height
+     * @param layers    Screen layers
+     */
     Screen(uint32_t w, uint32_t h, uint32_t layers);
+
+    /**
+     * Destructor
+     */
     ~Screen();
 
-    void draw();
+    // Disable copy
+    Screen(const Screen& val) = delete;
+    Screen& operator=(const Screen& a_val) = delete;
 
     /**
      * Clear scene (All pixels off in all layers)
@@ -81,12 +95,12 @@ public:
 
     void fill(colour_alpha_t colour, uint32_t layer);
 
+    /**
+     * Blend all layers into one.
+     *
+     * @return          Colour vector of size w*h
+     */
     std::vector<colour_t> blend() const;
-
-protected:
-    // Disable copy
-    Screen(const Screen& val);
-    Screen& operator=(const Screen& a_val);
 
 private:
     uint32_t w_;

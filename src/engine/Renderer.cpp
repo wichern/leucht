@@ -129,8 +129,38 @@ void Renderer::render(const Screen& screen)
     std::vector<colour_t> merged = screen.blend();
 
     if (bcm2835_) {
-        bcm2835_spi_writenb(reinterpret_cast<char*>(merged.data()), merged.size() * 3);
-        //bcm2835_spi_transfern(reinterpret_cast<char*>(merged.data()), merged.size() * 3);
+        // The Pixels are arranged like this on the wall:
+        //
+        // 16 -- 17 -- 18 -- 19 -- 20 -- 21 -- 22 -- 23
+        //  |
+        // 15 -- 14 -- 13 -- 12 -- 11 -- 10 -- 09 -- 08
+        //                                           |
+        // 00 -- 01 -- 02 -- 03 -- 04 -- 05 -- 06 -- 07
+        //
+        // The colour vector is arranged like this:
+        //
+        // 00 -- 01 -- 02 -- 03 -- 04 -- 05 -- 06 -- 07
+        //
+        // 08 -- 09 -- 10 -- 11 -- 12 -- 13 -- 14 -- 15
+        //
+        // Therfore this array has to be converted:
+        std::vector<colour_t> rearranged;
+        rearranged.resize(merged.size());
+
+        uint32_t idx = 0;
+        for (uint32_t y = 0; y < screen.height(); ++y) {
+            for (uint32_t x = 0; x < screen.width(); ++x) {
+                if (y & 1) {  // Odd row
+                    rearranged[(1 + y) * screen.width() - x] = merged[idx];
+                } else {  // Even row
+                    rearranged[x + (y * screen.width())] = merged[idx];
+                }
+                ++idx;
+            }
+        }
+
+        bcm2835_spi_writenb(reinterpret_cast<char*>(rearranged.data()), rearranged.size() * 3);
+        //bcm2835_spi_transfern(reinterpret_cast<char*>(rearranged.data()), rearranged.size() * 3);
 
         // Data is latched by holding clock pin low for 1 millisecond
         // @todo: really neccessary?

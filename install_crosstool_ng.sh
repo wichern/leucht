@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt install bison wget flex texinfo help2man libtool-bin libtool-doc
+sudo apt install bison wget flex texinfo help2man libtool-bin libtool-doc libncurses5-dev
 
 CTNG_VERSION=1.24.0
 
@@ -11,6 +11,6 @@ cd crosstool-ng-$CTNG_VERSION
 make -j
 sudo make install
 cd ..
-rm -rf $CTNG_VERSION
+rm -rf crosstool-ng-$CTNG_VERSION
 rm crosstool-ng-$CTNG_VERSION.tar.xz
 

@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <string>
 
 Screen::Screen(uint32_t w, uint32_t h, uint32_t layers)
     : w_(w),

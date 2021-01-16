@@ -26,7 +26,7 @@ make -j
 
 ## Cross-Compile for Raspberry Pi Zero
 
-The raspberry pi zero needs an arm6 compiler (see [here](https://raspberrypi.stackexchange.com/a/103756/113940).
+The raspberry pi zero needs an arm6 compiler (see [here](https://raspberrypi.stackexchange.com/a/103756/113940)).
 
 ### Install Crosstool-NG
 
@@ -39,7 +39,7 @@ The raspberry pi zero needs an arm6 compiler (see [here](https://raspberrypi.sta
 ```bash
 ct-ng armv6-rpi-linux-gnueabi
 ct-ng menuconfig
-# Paths and misc options  ---> CT_PREFIX: ${CT_PREFIX:-./x-tools}/${CT_HOST:+HOST-${CT_HOST}/}${CT_TARGET}
+# Paths and misc options  ---> set CT_PREFIX to "${CT_PREFIX:-./x-tools}/${CT_HOST:+HOST-${CT_HOST}/}${CT_TARGET}"
 ct-ng build
 # Retry on download errors.
 ```

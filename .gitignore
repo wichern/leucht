@@ -39,3 +39,6 @@ external/build-pistache
 CMakeLists.txt.user
 
 x-tools/
+build/
+external/
+.vscode/
